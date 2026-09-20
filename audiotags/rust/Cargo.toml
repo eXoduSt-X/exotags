@@ -4,6 +4,7 @@ version = "1.4.5"
 edition = "2021"
 
 [lib]
+name = "rust_lib_audiotags"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
