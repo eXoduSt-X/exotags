@@ -36,12 +36,7 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
     set(CARGOKIT_ENV
         "CARGOKIT_CMAKE=${CMAKE_COMMAND}"
         "CARGOKIT_CONFIGURATION=$<CONFIG>"
-        # Parche: resolver symlinks en la ruta del manifest antes de pasarla.
-        # En Flutter Windows, CMAKE_CURRENT_SOURCE_DIR puede ser un symlink
-        # (.plugin_symlinks/...), y la concatenación con manifest_dir
-        # produce una ruta que no se resuelve bien.
-        get_filename_component(CARGOKIT_MANIFEST_DIR_RAW "${CMAKE_CURRENT_SOURCE_DIR}/${manifest_dir}" REALPATH)
-        "CARGOKIT_MANIFEST_DIR=${CARGOKIT_MANIFEST_DIR_RAW}"   
+        "CARGOKIT_MANIFEST_DIR=${CMAKE_CURRENT_SOURCE_DIR}/${manifest_dir}"  
         "CARGOKIT_TARGET_TEMP_DIR=${CARGOKIT_TEMP_DIR}"
         "CARGOKIT_OUTPUT_DIR=${CARGOKIT_OUTPUT_DIR}"
         "CARGOKIT_TARGET_PLATFORM=${CARGOKIT_TARGET_PLATFORM}"
