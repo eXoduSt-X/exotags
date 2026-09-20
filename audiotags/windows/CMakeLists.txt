@@ -56,9 +56,16 @@ if(NOT EXISTS ${LibPath})
 endif()
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/audiotags.dll")
+  # Parche: resolver symlinks antes de extraer el tar.
+  # CMake >= 3.31 falla al extraer a través de symlinks (error
+  # "Cannot extract through symlink"). En Flutter Windows, el path
+  # del plugin puede incluir symlinks (flutter/ephemeral/.plugin_symlinks),
+  # así que forzamos la ruta real con REALPATH.
+  # Referencia: https://github.com/wang-bin/fvp/issues/367
+  get_filename_component(AUDIOTAGS_EXTRACT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E tar -xzf windows.tar.gz
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${AUDIOTAGS_EXTRACT_DIR}
   )
 endif()
 
