@@ -33,10 +33,27 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
         set(CARGOKIT_TARGET_PLATFORM "windows-x64")
     endif()
 
+    # Parche: construir CARGOKIT_MANIFEST_DIR como ruta absoluta resuelta.
+    # Motivo: en Flutter Windows, CMAKE_CURRENT_SOURCE_DIR es un symlink
+    # (.plugin_symlinks/...). Al concatenar con manifest_dir (que puede
+    # incluir ../../..), el resultado no se resuelve correctamente y
+    # cargokit falla con "path not found".
+    #
+    # Además, si manifest_dir ya es una ruta absoluta (por ejemplo, porque
+    # el CMakeLists del plugin la precalcula con REALPATH), no hay que
+    # concatenarla con CMAKE_CURRENT_SOURCE_DIR.
+    #
+    # Referencia: https://github.com/wang-bin/fvp/issues/367
+    if(IS_ABSOLUTE "${manifest_dir}")
+        set(CARGOKIT_MANIFEST_DIR_ABS "${manifest_dir}")
+    else()
+        get_filename_component(CARGOKIT_MANIFEST_DIR_ABS "${CMAKE_CURRENT_SOURCE_DIR}/${manifest_dir}" REALPATH)
+    endif()
+
     set(CARGOKIT_ENV
         "CARGOKIT_CMAKE=${CMAKE_COMMAND}"
         "CARGOKIT_CONFIGURATION=$<CONFIG>"
-        "CARGOKIT_MANIFEST_DIR=${CMAKE_CURRENT_SOURCE_DIR}/${manifest_dir}"  
+        "CARGOKIT_MANIFEST_DIR=${CARGOKIT_MANIFEST_DIR_ABS}"
         "CARGOKIT_TARGET_TEMP_DIR=${CARGOKIT_TEMP_DIR}"
         "CARGOKIT_OUTPUT_DIR=${CARGOKIT_OUTPUT_DIR}"
         "CARGOKIT_TARGET_PLATFORM=${CARGOKIT_TARGET_PLATFORM}"
