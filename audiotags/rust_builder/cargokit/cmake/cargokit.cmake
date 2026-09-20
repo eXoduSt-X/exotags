@@ -126,21 +126,15 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
     # (que CMake rechaza con "already has a custom rule"), añadimos un
     # POST_BUILD al target de cargokit que copia el .dll.
     #
+    # IMPORTANTE: usar la ruta hardcoded x86_64-pc-windows-msvc porque
+    # EXISTS en CMake se evalúa en tiempo de CONFIGURACIÓN (cuando el .dll
+    # aún no existe). El .dll se compila en tiempo de BUILD.
+    #
     # Referencia: https://github.com/wang-bin/fvp/issues/367
     # -------------------------------------------------------------------------
     if(WIN32 AND TARGET "${target}_cargokit")
-        # El .dll está en la carpeta del target de Rust, no en la del target
-        # de Flutter. Probamos ambas rutas por robustez.
-        set(_cargokit_built_dll_rust
+        set(_cargokit_built_dll
             "${CARGOKIT_TEMP_DIR}/x86_64-pc-windows-msvc/debug/${CARGOKIT_LIB_NAME}.dll")
-        set(_cargokit_built_dll_flutter
-            "${CARGOKIT_TEMP_DIR}/${CARGOKIT_TARGET_PLATFORM}/debug/${CARGOKIT_LIB_NAME}.dll")
-
-        if(EXISTS "${_cargokit_built_dll_rust}")
-            set(_cargokit_built_dll "${_cargokit_built_dll_rust}")
-        else()
-            set(_cargokit_built_dll "${_cargokit_built_dll_flutter}")
-        endif()
 
         add_custom_command(
             TARGET "${target}_cargokit"
