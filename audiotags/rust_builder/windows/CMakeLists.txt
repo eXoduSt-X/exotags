@@ -9,7 +9,8 @@ set(PROJECT_NAME "rust_lib_audiotags")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 include("../cargokit/cmake/cargokit.cmake")
-apply_cargokit(${PROJECT_NAME} ../../../../../../rust rust_lib_audiotags "")
+get_filename_component(RUST_MANIFEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../rust" REALPATH)
+apply_cargokit(${PROJECT_NAME} "${RUST_MANIFEST_DIR}" rust_lib_audiotags "")
 
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
