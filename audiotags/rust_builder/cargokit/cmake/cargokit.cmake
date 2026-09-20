@@ -113,4 +113,32 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
     # Allow adding the output library to plugin bundled libraries
     set("${target}_cargokit_lib" ${OUTPUT_LIB} PARENT_SCOPE)
 
+    # -------------------------------------------------------------------------
+    # Parche: asegurar que el .dll compilado esté en la ruta que CMake espera.
+    #
+    # cargokit compila el Rust en:
+    #   ${CARGOKIT_TEMP_DIR}/${CARGOKIT_TARGET_PLATFORM}/debug/${nombre}.dll
+    # Pero CMake lo espera en:
+    #   ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${CARGOKIT_LIB_FULL_NAME}
+    #
+    # En Windows con MSBuild, cargokit no siempre copia el .dll a la ruta
+    # esperada (bug conocido). Este custom_command hace la copia explícita.
+    #
+    # Referencia: https://github.com/wang-bin/fvp/issues/367
+    # -------------------------------------------------------------------------
+    if(WIN32)
+        set(_cargokit_built_dll
+            "${CARGOKIT_TEMP_DIR}/${CARGOKIT_TARGET_PLATFORM}/debug/${CARGOKIT_LIB_NAME}.dll")
+        add_custom_command(
+            OUTPUT "${OUTPUT_LIB}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_cargokit_built_dll}"
+                "${OUTPUT_LIB}"
+            DEPENDS "${_cargokit_built_dll}"
+            VERBATIM
+        )
+        add_custom_target("${target}_cargokit_copy" DEPENDS "${OUTPUT_LIB}")
+        add_dependencies("${target}_cargokit_copy" "${target}_cargokit")
+    endif()
+
 endfunction()
