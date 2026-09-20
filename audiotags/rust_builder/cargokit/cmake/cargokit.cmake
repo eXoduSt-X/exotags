@@ -121,24 +121,23 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
     # Pero CMake lo espera en:
     #   ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${CARGOKIT_LIB_FULL_NAME}
     #
-    # En Windows con MSBuild, cargokit no siempre copia el .dll a la ruta
-    # esperada (bug conocido). Este custom_command hace la copia explícita.
+    # En lugar de añadir un segundo add_custom_command con el mismo OUTPUT
+    # (que CMake rechaza con "already has a custom rule"), añadimos un
+    # POST_BUILD al target de cargokit.
     #
     # Referencia: https://github.com/wang-bin/fvp/issues/367
     # -------------------------------------------------------------------------
-    if(WIN32)
+    if(WIN32 AND TARGET "${target}_cargokit")
         set(_cargokit_built_dll
             "${CARGOKIT_TEMP_DIR}/${CARGOKIT_TARGET_PLATFORM}/debug/${CARGOKIT_LIB_NAME}.dll")
         add_custom_command(
-            OUTPUT "${OUTPUT_LIB}"
+            TARGET "${target}_cargokit"
+            POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${_cargokit_built_dll}"
                 "${OUTPUT_LIB}"
-            DEPENDS "${_cargokit_built_dll}"
             VERBATIM
         )
-        add_custom_target("${target}_cargokit_copy" DEPENDS "${OUTPUT_LIB}")
-        add_dependencies("${target}_cargokit_copy" "${target}_cargokit")
     endif()
 
 endfunction()
