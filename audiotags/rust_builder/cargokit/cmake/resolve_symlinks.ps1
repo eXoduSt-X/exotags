@@ -6,6 +6,11 @@ function Resolve-Symlinks {
         [string] $Path
     )
 
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        Write-Error "Resolve-Symlinks: path vacío"
+        exit 1
+    }
+
     [string] $separator = '/'
     [string[]] $parts = $Path.Split($separator)
 
@@ -15,13 +20,20 @@ function Resolve-Symlinks {
             $realPath += $separator
         }
         $realPath += $part
-        $item = Get-Item $realPath
-        if ($item.Target) {
-            $realPath = $item.Target.Replace('\', '/')
+        try {
+            $item = Get-Item -LiteralPath $realPath -ErrorAction Stop
+            if ($item.Target) {
+                $target = $item.Target
+                if ($target -is [array]) { $target = $target[0] }
+                $realPath = $target.Replace('\', '/')
+            }
+        } catch {
+            # Segmento no encontrado / no es symlink / error de permisos:
+            # seguimos construyendo el path tal cual.
         }
     }
     $realPath
 }
 
-$path=Resolve-Symlinks -Path $args[0]
+$path = Resolve-Symlinks -Path $args[0]
 Write-Host $path
