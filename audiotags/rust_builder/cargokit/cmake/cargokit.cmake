@@ -134,7 +134,7 @@ function(apply_cargokit target manifest_dir lib_name any_symbol_name)
     # -------------------------------------------------------------------------
     if(WIN32 AND TARGET "${target}_cargokit")
         set(_cargokit_built_dll
-            "${CARGOKIT_TEMP_DIR}/x86_64-pc-windows-msvc/debug/${CARGOKIT_LIB_NAME}.dll")
+           "${CARGOKIT_TEMP_DIR}/x86_64-pc-windows-msvc/$<IF:$<CONFIG:Debug>,debug,release>/${CARGOKIT_LIB_NAME}.dll")
 
         add_custom_command(
             TARGET "${target}_cargokit"
