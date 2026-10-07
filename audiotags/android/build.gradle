@@ -25,16 +25,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    // Conditional for compatibility with AGP < 4.2.
-    if (project.android.hasProperty("namespace")) {
-        namespace 'com.erikas.audiotags'
-    }
-
-    compileSdkVersion 31
+    namespace 'com.erikas.audiotags'
+    compileSdkVersion 36                          // ← cambiar
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17 // ← cambiar
+        targetCompatibility JavaVersion.VERSION_17 // ← cambiar
     }
 
     kotlinOptions {
@@ -54,5 +50,10 @@ android {
         cmake {
             path "CMakeLists.txt"
         }
+    }
+}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
