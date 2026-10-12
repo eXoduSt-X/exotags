@@ -4,12 +4,18 @@ use lofty::{Accessor, AudioFile, ItemKey, Probe, TagExt, TaggedFile, TaggedFileE
 /// Returns a `TaggedFile` at the given path.
 fn get_file(path: &str) -> Result<TaggedFile, AudioTagsError> {
     match Probe::open(path) {
-        Ok(file) => match file.read() {
-            Ok(file) => Ok(file),
-            Err(err) => Err(AudioTagsError::OpenFile {
-                message: err.to_string(),
-            }),
-        },
+        Ok(file) => {
+            // Usar ParseOptions explícitas con ParsingMode::Relaxed para
+            // tolerar frames MP3 "raros" que el modo estricto rechaza.
+            let options = lofty::ParseOptions::new()
+                .parsing_mode(lofty::ParsingMode::Relaxed);
+            match file.read_with_options(&options) {
+                Ok(file) => Ok(file),
+                Err(err) => Err(AudioTagsError::OpenFile {
+                    message: err.to_string(),
+                }),
+            }
+        }
         Err(_) => Err(AudioTagsError::InvalidPath),
     }
 }
